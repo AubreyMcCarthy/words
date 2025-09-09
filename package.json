@@ -1,0 +1,14 @@
+{
+  "name": "timelinetestsite",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch"
+  },
+  "dependencies": {
+    "front-matter": "^4.0.2",
+    "marked": "^9.1.0",
+    "chokidar": "^3.5.3"
+  }
+}
