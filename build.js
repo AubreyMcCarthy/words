@@ -7,10 +7,12 @@ import chokidar from 'chokidar';
 const CONTENT_DIR = './content';
 const OUTPUT_DIR = './docs';
 const TEMPLATE_PATH = './template.html';
+const POST_TEMPLATE_PATH = './template-post.html';
+const OUTPUT_POSTS_DIR = path.join(OUTPUT_DIR, 'posts');
 
 const SITE_CONFIG = {
-  title: 'Aubrey - Words',
-  description: 'Words, thoughts, musings...',
+  title: 'Aubrey McCarthy - Words',
+  description: 'A collection of thoughts about making, game development, and life.',
   url: 'https://words.aubrey.page',
   author: 'Aubrey McCarthy'
 };
@@ -21,6 +23,7 @@ async function generateSite() {
 
   // Read template
   const template = await fs.readFile(TEMPLATE_PATH, 'utf-8');
+  const postTemplate = await fs.readFile(POST_TEMPLATE_PATH, 'utf-8');
 
   // Read all markdown files
   const files = await fs.readdir(CONTENT_DIR);
@@ -65,12 +68,35 @@ async function generateSite() {
   const allTags = [...new Set(entries.flatMap(entry => entry.tags))].sort();
 
   // Generate portfolio items HTML with tags
-  const portfolioItems = entries.map(entry => {
-    const tagsHTML = entry.tags.length > 0 
+  const portfolioItems = entries.map(async entry => {
+	const tagsHTML = entry.tags.length > 0 
       ? `<div class="portfolio-tags">
            ${entry.tags.map(tag => `<span class="tag" data-tag="${tag}">${tag}</span>`).join(' ')}
          </div>`
       : '';
+
+	const post = `
+      <div class="portfolio-item">
+        <div class="portfolio-header">
+          <div class="portfolio-date">${entry.date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</div>
+          <header class="portfolio-title">${entry.title}</header>
+          ${tagsHTML}
+        </div>
+        <div class="portfolio-content">
+          ${entry.content}
+        </div>
+      </div>
+    `
+	// Insert content into template
+	let outputHTML = postTemplate.replace('<!-- BLOG_ITEM -->', post);
+	outputHTML = outputHTML.replace('<!-- BLOG_TITLE -->', entry.title);
+
+	// Write output file
+	await fs.writeFile(path.join(OUTPUT_POSTS_DIR, `${entry.slug}.html`), outputHTML);
     
     return `
       <div class="portfolio-item" data-tags="${entry.tags.join(' ')}">
@@ -80,7 +106,7 @@ async function generateSite() {
             month: 'long', 
             day: 'numeric' 
           })}</div>
-          <h2 class="portfolio-title">${entry.title}</h2>
+          <header class="portfolio-title"><a href="/posts/${entry.slug}">${entry.title}</a></header>
           ${tagsHTML}
         </div>
         <div class="portfolio-content">
@@ -116,7 +142,7 @@ async function generateRSSFeed(entries) {
   const rssItems = entries.slice(0, 20).map(entry => { // Latest 20 posts
     const pubDate = entry.date.toUTCString();
     const description = entry.description || entry.content.substring(0, 200).replace(/<[^>]*>/g, '') + '...';
-    const postUrl = `${SITE_CONFIG.url}/posts/${entry.slug}.html`;
+    const postUrl = `${SITE_CONFIG.url}/posts/${entry.slug}`;
     
     return `    <item>
       <title><![CDATA[${entry.title}]]></title>

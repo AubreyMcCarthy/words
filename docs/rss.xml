@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Aubrey - Words</title>
-    <description>Words, thoughts, musings...</description>
+    <title>Aubrey McCarthy - Words</title>
+    <description>A collection of thoughts about making, game development, and life.</description>
     <link>https://words.aubrey.page</link>
-    <lastBuildDate>Tue, 09 Sep 2025 22:39:06 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 10 Sep 2025 20:18:07 GMT</lastBuildDate>
     <generator>Custom Static Site Generator</generator>
     <language>en-US</language>
 
@@ -14,9 +14,9 @@
 ...]]></description>
       <content:encoded><![CDATA[<p>In the interest of if you want to do something make it easy to do. Here is a blog, which is easy to post to.</p>
 ]]></content:encoded>
-      <link>https://words.aubrey.page/posts/init.html</link>
-      <guid isPermaLink="true">https://words.aubrey.page/posts/init.html</guid>
-      <pubDate>Tue, 09 Sep 2025 00:00:00 GMT</pubDate>
+      <link>https://words.aubrey.page/posts/init</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/init</guid>
+      <pubDate>Wed, 10 Sep 2025 00:00:00 GMT</pubDate>
     </item>
     <item>
       <title><![CDATA[Hello World]]></title>
@@ -24,9 +24,9 @@
 ...]]></description>
       <content:encoded><![CDATA[<p>Hello World!</p>
 ]]></content:encoded>
-      <link>https://words.aubrey.page/posts/hello_world.html</link>
-      <guid isPermaLink="true">https://words.aubrey.page/posts/hello_world.html</guid>
-      <pubDate>Sun, 07 Sep 2025 00:00:00 GMT</pubDate>
+      <link>https://words.aubrey.page/posts/hello_world</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/hello_world</guid>
+      <pubDate>Tue, 09 Sep 2025 00:00:00 GMT</pubDate>
     </item>
     <item>
       <title><![CDATA[Just Draw]]></title>
@@ -40,8 +40,8 @@ It has an infinite canvas and fun colours. Try it out</p>
     loading="lazy"
     >
 </iframe>]]></content:encoded>
-      <link>https://words.aubrey.page/posts/just_draw.html</link>
-      <guid isPermaLink="true">https://words.aubrey.page/posts/just_draw.html</guid>
+      <link>https://words.aubrey.page/posts/just_draw</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/just_draw</guid>
       <pubDate>Sat, 25 Jan 2025 00:00:00 GMT</pubDate>
     </item>
   </channel>

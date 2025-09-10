@@ -1,47 +1,49 @@
-<!-- template.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aubrey's Blog</title>
-  <link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Aubrey's Blog</title>
+	<link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 	<!-- TAG_FILTERS -->
-  <div class="portfolio-section">
-    <!-- PORTFOLIO_ITEMS -->
-  </div>
+	<div class="portfolio-section">
+		<!-- PORTFOLIO_ITEMS -->
+	</div>
 
-  <script>
-	document.addEventListener('DOMContentLoaded', function() {
-	const filterButtons = document.querySelectorAll('.tag-filter');
-	const portfolioItems = document.querySelectorAll('.portfolio-item');
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const filterButtons = document.querySelectorAll('.tag-filter');
+			const portfolioItems = document.querySelectorAll('.portfolio-item');
 
-	filterButtons.forEach(button => {
-		button.addEventListener('click', function() {
-		const filter = this.dataset.filter;
-		
-		// Update active button
-		filterButtons.forEach(btn => btn.classList.remove('active'));
-		this.classList.add('active');
-		
-		// Filter posts
-		portfolioItems.forEach(item => {
-			if (filter === 'all') {
-			item.classList.remove('hidden');
-			} else {
-			const itemTags = item.dataset.tags.split(' ');
-			if (itemTags.includes(filter)) {
-				item.classList.remove('hidden');
-			} else {
-				item.classList.add('hidden');
-			}
-			}
+			filterButtons.forEach(button => {
+				button.addEventListener('click', function () {
+					const filter = this.dataset.filter;
+
+					// Update active button
+					filterButtons.forEach(btn => btn.classList.remove('active'));
+					this.classList.add('active');
+
+					// Filter posts
+					portfolioItems.forEach(item => {
+						if (filter === 'all') {
+							item.classList.remove('hidden');
+						} else {
+							const itemTags = item.dataset.tags.split(' ');
+							if (itemTags.includes(filter)) {
+								item.classList.remove('hidden');
+							} else {
+								item.classList.add('hidden');
+							}
+						}
+					});
+				});
+			});
 		});
-		});
-	});
-	});
 	</script>
 </body>
+
 </html>

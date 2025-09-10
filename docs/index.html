@@ -1,92 +1,51 @@
-<!-- template.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aubrey's Blog</title>
-  <link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Aubrey's Blog</title>
+	<link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 	
-  <div class="portfolio-section">
-    
-      <div class="portfolio-item" data-tags="">
-        <div class="portfolio-header">
-          <div class="portfolio-date">September 9, 2025</div>
-          <h2 class="portfolio-title">Init</h2>
-          
-        </div>
-        <div class="portfolio-content">
-          <p>In the interest of if you want to do something make it easy to do. Here is a blog, which is easy to post to.</p>
+	<div class="portfolio-section">
+		[object Promise]
+[object Promise]
+[object Promise]
+	</div>
 
-        </div>
-      </div>
-    
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const filterButtons = document.querySelectorAll('.tag-filter');
+			const portfolioItems = document.querySelectorAll('.portfolio-item');
 
-      <div class="portfolio-item" data-tags="">
-        <div class="portfolio-header">
-          <div class="portfolio-date">September 7, 2025</div>
-          <h2 class="portfolio-title">Hello World</h2>
-          
-        </div>
-        <div class="portfolio-content">
-          <p>Hello World!</p>
+			filterButtons.forEach(button => {
+				button.addEventListener('click', function () {
+					const filter = this.dataset.filter;
 
-        </div>
-      </div>
-    
+					// Update active button
+					filterButtons.forEach(btn => btn.classList.remove('active'));
+					this.classList.add('active');
 
-      <div class="portfolio-item" data-tags="">
-        <div class="portfolio-header">
-          <div class="portfolio-date">January 25, 2025</div>
-          <h2 class="portfolio-title">Just Draw</h2>
-          
-        </div>
-        <div class="portfolio-content">
-          <p>You&#39;ve reached the end of my blog. Here&#39;s a simple drawing web app I made to amuse yourself.<br>
-It has an infinite canvas and fun colours. Try it out</p>
-<p><a href="https://aubreymccarthy.github.io/JustDraw/">Visit Just Draw</a></p>
-<iframe style="border: 0; width: 100%; height: 600px;" 
-    src="https://aubreymccarthy.github.io/JustDraw/" 
-    seamless
-    loading="lazy"
-    >
-</iframe>
-        </div>
-      </div>
-    
-  </div>
-
-  <script>
-	document.addEventListener('DOMContentLoaded', function() {
-	const filterButtons = document.querySelectorAll('.tag-filter');
-	const portfolioItems = document.querySelectorAll('.portfolio-item');
-
-	filterButtons.forEach(button => {
-		button.addEventListener('click', function() {
-		const filter = this.dataset.filter;
-		
-		// Update active button
-		filterButtons.forEach(btn => btn.classList.remove('active'));
-		this.classList.add('active');
-		
-		// Filter posts
-		portfolioItems.forEach(item => {
-			if (filter === 'all') {
-			item.classList.remove('hidden');
-			} else {
-			const itemTags = item.dataset.tags.split(' ');
-			if (itemTags.includes(filter)) {
-				item.classList.remove('hidden');
-			} else {
-				item.classList.add('hidden');
-			}
-			}
+					// Filter posts
+					portfolioItems.forEach(item => {
+						if (filter === 'all') {
+							item.classList.remove('hidden');
+						} else {
+							const itemTags = item.dataset.tags.split(' ');
+							if (itemTags.includes(filter)) {
+								item.classList.remove('hidden');
+							} else {
+								item.classList.add('hidden');
+							}
+						}
+					});
+				});
+			});
 		});
-		});
-	});
-	});
 	</script>
 </body>
+
 </html>
