@@ -68,35 +68,14 @@ async function generateSite() {
   const allTags = [...new Set(entries.flatMap(entry => entry.tags))].sort();
 
   // Generate portfolio items HTML with tags
-  const portfolioItems = entries.map(async entry => {
+  const portfolioItems = entries.map(entry => {
 	const tagsHTML = entry.tags.length > 0 
       ? `<div class="portfolio-tags">
            ${entry.tags.map(tag => `<span class="tag" data-tag="${tag}">${tag}</span>`).join(' ')}
          </div>`
       : '';
 
-	const post = `
-      <div class="portfolio-item">
-        <div class="portfolio-header">
-          <div class="portfolio-date">${entry.date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}</div>
-          <header class="portfolio-title">${entry.title}</header>
-          ${tagsHTML}
-        </div>
-        <div class="portfolio-content">
-          ${entry.content}
-        </div>
-      </div>
-    `
-	// Insert content into template
-	let outputHTML = postTemplate.replace('<!-- BLOG_ITEM -->', post);
-	outputHTML = outputHTML.replace('<!-- BLOG_TITLE -->', entry.title);
-
-	// Write output file
-	await fs.writeFile(path.join(OUTPUT_POSTS_DIR, `${entry.slug}.html`), outputHTML);
+	writePost(entry, postTemplate, tagsHTML);
     
     return `
       <div class="portfolio-item" data-tags="${entry.tags.join(' ')}">
@@ -136,6 +115,32 @@ async function generateSite() {
 
   console.log('Site generated successfully!');
   console.log(`Generated ${entries.length} posts with tags: ${allTags.join(', ')}`);
+}
+
+async function writePost(entry, postTemplate, tagsHTML) {
+	const post = `
+      <div class="portfolio-item">
+        <div class="portfolio-header">
+          <div class="portfolio-date">${entry.date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</div>
+          <header class="portfolio-title">${entry.title}</header>
+          ${tagsHTML}
+        </div>
+        <div class="portfolio-content">
+          ${entry.content}
+        </div>
+      </div>
+    `
+	// Insert content into template
+	let outputHTML = postTemplate.replace('<!-- BLOG_ITEM -->', post);
+	outputHTML = outputHTML.replace('<!-- BLOG_TITLE -->', entry.title);
+
+	// Write output file
+	await fs.writeFile(path.join(OUTPUT_POSTS_DIR, `${entry.slug}.html`), outputHTML);
+
 }
 
 async function generateRSSFeed(entries) {
