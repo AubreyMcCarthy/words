@@ -143,7 +143,7 @@ async function generateSite() {
            ${entry.tags.map(tag => `<span class="tag" data-tag="${tag}">${tag}</span>`).join(' ')}
          </div>`
       : '';
-
+	const audioPlayer = generateAudioPlayer(entry);
 	writePost(entry, postTemplate, tagsHTML);
     
     return `
@@ -157,6 +157,7 @@ async function generateSite() {
           <header class="portfolio-title"><a href="/posts/${entry.slug}">${entry.title}</a></header>
           ${tagsHTML}
         </div>
+		${audioPlayer}
         <div class="portfolio-content">
           ${entry.content}
         </div>
