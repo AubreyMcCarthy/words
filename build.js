@@ -3,12 +3,17 @@ import path from 'path';
 import frontMatter from 'front-matter';
 import { marked } from 'marked';
 import chokidar from 'chokidar';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 const CONTENT_DIR = './content';
 const OUTPUT_DIR = './docs';
 const TEMPLATE_PATH = './template.html';
 const POST_TEMPLATE_PATH = './template-post.html';
 const OUTPUT_POSTS_DIR = path.join(OUTPUT_DIR, 'posts');
+const AUDIO_COVER_IMAGE = './audio-cover.jpg'; // Default cover image
 
 const SITE_CONFIG = {
   title: 'Aubrey McCarthy - Words',
@@ -16,6 +21,50 @@ const SITE_CONFIG = {
   url: 'https://words.aubrey.page',
   author: 'Aubrey McCarthy'
 };
+
+async function generateVideoFromAudio(audioPath, outputVideoPath, coverImage) {
+  try {
+    // Check if ffmpeg is available
+    await execAsync('ffmpeg -version');
+    
+    // Check if output already exists and is newer than source
+    try {
+      const audioStat = await fs.stat(audioPath);
+      const videoStat = await fs.stat(outputVideoPath);
+      if (videoStat.mtime > audioStat.mtime) {
+        console.log(`Video ${outputVideoPath} is up to date`);
+        return;
+      }
+    } catch (err) {
+      // File doesn't exist, need to generate
+    }
+
+    console.log(`Generating video for ${audioPath}...`);
+    
+    // Ensure output directory exists
+    await fs.mkdir(path.dirname(outputVideoPath), { recursive: true });
+    
+    // Generate video with static image and audio
+    // -loop 1: loop the image
+    // -i coverImage: input image
+    // -i audioPath: input audio
+    // -c:v libx264: use H.264 codec for video
+    // -tune stillimage: optimize for static image
+    // -c:a aac: use AAC codec for audio
+    // -b:a 192k: audio bitrate
+    // -pix_fmt yuv420p: pixel format for compatibility
+    // -shortest: finish when shortest input ends (the audio)
+    const ffmpegCmd = `ffmpeg -y -loop 1 -i "${coverImage}" -i "${audioPath}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -t 600 "${outputVideoPath}"`;
+    
+    await execAsync(ffmpegCmd);
+    console.log(`✓ Generated video: ${outputVideoPath}`);
+  } catch (error) {
+    console.error(`Failed to generate video for ${audioPath}:`, error.message);
+    if (error.message.includes('ffmpeg')) {
+      console.error('ffmpeg not found. Please install ffmpeg to generate videos for Discord preview.');
+    }
+  }
+}
 
 async function generateSite() {
   // Ensure output directory exists
@@ -43,10 +92,27 @@ async function generateSite() {
         tags: attributes.tags || [],
         slug,
         filename: file,
-        musicSource: attributes['music-source'] || null
+        musicSource: attributes['music-source'] || null,
+        coverImage: attributes['cover-image'] || null
       };
     })
   );
+
+  // Generate videos for music posts
+  for (const entry of entries) {
+    if (entry.musicSource && entry.tags.includes('music')) {
+      const audioPath = path.join(OUTPUT_DIR, entry.musicSource);
+      const videoPath = audioPath.replace(/\.(mp3|wav|ogg|m4a)$/i, '.mp4');
+      const coverImage = entry.coverImage 
+        ? path.join(OUTPUT_DIR, entry.coverImage)
+        : AUDIO_COVER_IMAGE;
+      
+      await generateVideoFromAudio(audioPath, videoPath, coverImage);
+      
+      // Store video path for later use
+      entry.videoSource = entry.musicSource.replace(/\.(mp3|wav|ogg|m4a)$/i, '.mp4');
+    }
+  }
 
   // Sort entries by date
   entries.sort((a, b) => b.date - a.date);
@@ -58,7 +124,8 @@ async function generateSite() {
     tags: entry.tags,
     slug: entry.slug,
     description: entry.description || '',
-    musicSource: entry.musicSource
+    musicSource: entry.musicSource,
+    videoSource: entry.videoSource
   }));
 
   await fs.writeFile(
@@ -77,8 +144,6 @@ async function generateSite() {
          </div>`
       : '';
 
-	const audioPlayer = generateAudioPlayer(entry);
-
 	writePost(entry, postTemplate, tagsHTML);
     
     return `
@@ -92,7 +157,6 @@ async function generateSite() {
           <header class="portfolio-title"><a href="/posts/${entry.slug}">${entry.title}</a></header>
           ${tagsHTML}
         </div>
-        ${audioPlayer}
         <div class="portfolio-content">
           ${entry.content}
         </div>
@@ -131,20 +195,34 @@ function generateOpenGraphTags(entry) {
     <meta property="og:title" content="${entry.title}" />
     <meta property="og:description" content="${description}" />
     <meta property="og:url" content="${postUrl}" />
-    <meta property="og:type" content="${isMusicPost ? 'music.song' : 'article'}" />
     <meta property="og:site_name" content="${SITE_CONFIG.title}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="${entry.title}" />
     <meta name="twitter:description" content="${description}" />
   `;
 
-  if (isMusicPost) {
+  if (isMusicPost && entry.videoSource) {
+    // Use og:video for Discord compatibility
+    const videoUrl = `${SITE_CONFIG.url}${entry.videoSource}`;
     const audioUrl = `${SITE_CONFIG.url}${entry.musicSource}`;
+    
     ogTags += `
+    <meta property="og:type" content="video.other" />
+    <meta property="og:video" content="${videoUrl}" />
+    <meta property="og:video:secure_url" content="${videoUrl}" />
+    <meta property="og:video:type" content="video/mp4" />
     <meta property="og:audio" content="${audioUrl}" />
     <meta property="og:audio:type" content="audio/mpeg" />
     <meta property="music:musician" content="${SITE_CONFIG.author}" />
     `;
+    
+    // Add twitter player card for better support
+    ogTags += `
+    <meta name="twitter:card" content="player" />
+    <meta name="twitter:player" content="${videoUrl}" />
+    `;
+  } else {
+    ogTags += `<meta property="og:type" content="article" />`;
   }
 
   return ogTags;

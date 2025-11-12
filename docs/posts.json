@@ -7,7 +7,8 @@
     ],
     "slug": "sence",
     "description": "Autumn downtempo vibes",
-    "musicSource": "/audio/SENCE.mp3"
+    "musicSource": "/audio/SENCE.mp3",
+    "videoSource": "/audio/SENCE.mp4"
   },
   {
     "title": "Init",
