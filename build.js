@@ -42,7 +42,8 @@ async function generateSite() {
         date: new Date(attributes.date),
         tags: attributes.tags || [],
         slug,
-        filename: file
+        filename: file,
+        musicSource: attributes['music-source'] || null
       };
     })
   );
@@ -56,7 +57,8 @@ async function generateSite() {
     date: entry.date.toISOString(),
     tags: entry.tags,
     slug: entry.slug,
-    description: entry.description || ''
+    description: entry.description || '',
+    musicSource: entry.musicSource
   }));
 
   await fs.writeFile(
@@ -75,6 +77,8 @@ async function generateSite() {
          </div>`
       : '';
 
+	const audioPlayer = generateAudioPlayer(entry);
+
 	writePost(entry, postTemplate, tagsHTML);
     
     return `
@@ -88,6 +92,7 @@ async function generateSite() {
           <header class="portfolio-title"><a href="/posts/${entry.slug}">${entry.title}</a></header>
           ${tagsHTML}
         </div>
+        ${audioPlayer}
         <div class="portfolio-content">
           ${entry.content}
         </div>
@@ -117,8 +122,52 @@ async function generateSite() {
   console.log(`Generated ${entries.length} posts with tags: ${allTags.join(', ')}`);
 }
 
+function generateOpenGraphTags(entry) {
+  const postUrl = `${SITE_CONFIG.url}/posts/${entry.slug}`;
+  const description = entry.description || entry.content.substring(0, 200).replace(/<[^>]*>/g, '');
+  const isMusicPost = entry.tags.includes('music') && entry.musicSource;
+  
+  let ogTags = `
+    <meta property="og:title" content="${entry.title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:url" content="${postUrl}" />
+    <meta property="og:type" content="${isMusicPost ? 'music.song' : 'article'}" />
+    <meta property="og:site_name" content="${SITE_CONFIG.title}" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="${entry.title}" />
+    <meta name="twitter:description" content="${description}" />
+  `;
+
+  if (isMusicPost) {
+    const audioUrl = `${SITE_CONFIG.url}${entry.musicSource}`;
+    ogTags += `
+    <meta property="og:audio" content="${audioUrl}" />
+    <meta property="og:audio:type" content="audio/mpeg" />
+    <meta property="music:musician" content="${SITE_CONFIG.author}" />
+    `;
+  }
+
+  return ogTags;
+}
+
+function generateAudioPlayer(entry) {
+  if (!entry.musicSource) return '';
+  
+  return `
+    <div class="audio-player">
+      <audio controls preload="metadata">
+        <source src="${entry.musicSource}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  `;
+}
+
 async function writePost(entry, postTemplate, tagsHTML) {
-	const post = `
+  const audioPlayer = generateAudioPlayer(entry);
+  const ogTags = generateOpenGraphTags(entry);
+
+  const post = `
       <div class="portfolio-item">
         <div class="portfolio-header">
           <div class="portfolio-date">${entry.date.toLocaleDateString('en-US', { 
@@ -129,6 +178,7 @@ async function writePost(entry, postTemplate, tagsHTML) {
           <header class="portfolio-title">${entry.title}</header>
           ${tagsHTML}
         </div>
+        ${audioPlayer}
         <div class="portfolio-content">
           ${entry.content}
         </div>
@@ -137,10 +187,10 @@ async function writePost(entry, postTemplate, tagsHTML) {
 	// Insert content into template
 	let outputHTML = postTemplate.replace('<!-- BLOG_ITEM -->', post);
 	outputHTML = outputHTML.replace('<!-- BLOG_TITLE -->', entry.title);
+  outputHTML = outputHTML.replace('<!-- OG_TAGS -->', ogTags);
 
 	// Write output file
 	await fs.writeFile(path.join(OUTPUT_POSTS_DIR, `${entry.slug}.html`), outputHTML);
-
 }
 
 async function generateRSSFeed(entries) {
@@ -149,6 +199,11 @@ async function generateRSSFeed(entries) {
     const description = entry.description || entry.content.substring(0, 200).replace(/<[^>]*>/g, '') + '...';
     const postUrl = `${SITE_CONFIG.url}/posts/${entry.slug}`;
     
+    // Add enclosure for music posts
+    const enclosure = entry.musicSource 
+      ? `<enclosure url="${SITE_CONFIG.url}${entry.musicSource}" type="audio/mpeg" />`
+      : '';
+    
     return `    <item>
       <title><![CDATA[${entry.title}]]></title>
       <description><![CDATA[${description}]]></description>
@@ -156,6 +211,7 @@ async function generateRSSFeed(entries) {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
+      ${enclosure}
     </item>`;
   }).join('\n');
 

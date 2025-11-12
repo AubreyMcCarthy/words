@@ -1,23 +1,36 @@
 [
   {
+    "title": "SENCE",
+    "date": "2025-11-11T00:00:00.000Z",
+    "tags": [
+      "music"
+    ],
+    "slug": "sence",
+    "description": "Autumn downtempo vibes",
+    "musicSource": "/audio/SENCE.mp3"
+  },
+  {
     "title": "Init",
     "date": "2025-09-10T00:00:00.000Z",
     "tags": [],
     "slug": "init",
-    "description": ""
+    "description": "",
+    "musicSource": null
   },
   {
     "title": "Hello World",
     "date": "2025-09-09T00:00:00.000Z",
     "tags": [],
     "slug": "hello_world",
-    "description": ""
+    "description": "",
+    "musicSource": null
   },
   {
     "title": "Just Draw",
     "date": "2025-01-25T00:00:00.000Z",
     "tags": [],
     "slug": "just_draw",
-    "description": "A fun drawing web app!?"
+    "description": "A fun drawing web app!?",
+    "musicSource": null
   }
 ]

@@ -4,10 +4,19 @@
     <title>Aubrey McCarthy - Words</title>
     <description>A collection of thoughts about making, game development, and life.</description>
     <link>https://words.aubrey.page</link>
-    <lastBuildDate>Wed, 10 Sep 2025 20:26:38 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 12 Nov 2025 22:05:34 GMT</lastBuildDate>
     <generator>Custom Static Site Generator</generator>
     <language>en-US</language>
 
+    <item>
+      <title><![CDATA[SENCE]]></title>
+      <description><![CDATA[Autumn downtempo vibes]]></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+      <link>https://words.aubrey.page/posts/sence</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/sence</guid>
+      <pubDate>Tue, 11 Nov 2025 00:00:00 GMT</pubDate>
+      <enclosure url="https://words.aubrey.page/audio/SENCE.mp3" type="audio/mpeg" />
+    </item>
     <item>
       <title><![CDATA[Init]]></title>
       <description><![CDATA[In the interest of if you want to do something make it easy to do. Here is a blog, which is easy to post to.
@@ -17,6 +26,7 @@
       <link>https://words.aubrey.page/posts/init</link>
       <guid isPermaLink="true">https://words.aubrey.page/posts/init</guid>
       <pubDate>Wed, 10 Sep 2025 00:00:00 GMT</pubDate>
+      
     </item>
     <item>
       <title><![CDATA[Hello World]]></title>
@@ -27,6 +37,7 @@
       <link>https://words.aubrey.page/posts/hello_world</link>
       <guid isPermaLink="true">https://words.aubrey.page/posts/hello_world</guid>
       <pubDate>Tue, 09 Sep 2025 00:00:00 GMT</pubDate>
+      
     </item>
     <item>
       <title><![CDATA[Just Draw]]></title>
@@ -43,6 +54,7 @@ It has an infinite canvas and fun colours. Try it out</p>
       <link>https://words.aubrey.page/posts/just_draw</link>
       <guid isPermaLink="true">https://words.aubrey.page/posts/just_draw</guid>
       <pubDate>Sat, 25 Jan 2025 00:00:00 GMT</pubDate>
+      
     </item>
   </channel>
 </rss>
