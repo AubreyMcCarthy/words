@@ -22,6 +22,51 @@ const SITE_CONFIG = {
   author: 'Aubrey McCarthy'
 };
 
+async function generateWaveformImage(audioPath, outputImagePath, coverImage) {
+  try {
+    console.log(`Generating waveform image for ${audioPath}...`);
+    
+    // Ensure output directory exists
+    await fs.mkdir(path.dirname(outputImagePath), { recursive: true });
+    
+    // Step 1: Get the dimensions of the source cover image
+    const probeCmd = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${coverImage}"`;
+    const { stdout: dimensions } = await execAsync(probeCmd);
+    const [width, height] = dimensions.trim().split('x').map(Number);
+    
+    // Use source dimensions
+    const targetWidth = width || 1200;
+    const targetHeight = height || 630;
+    
+    // Step 1: Extract first 50 seconds of audio to temp file
+    const tempAudio = outputImagePath.replace(/\.(jpg|png)$/, '-temp.mp3');
+    const extractCmd = `ffmpeg -y -i "${audioPath}" -t 50 -q:a 0 "${tempAudio}"`;
+    await execAsync(extractCmd);
+    
+    // Step 2: Generate waveform visualization from the extracted audio
+    const tempWaveform = outputImagePath.replace(/\.(jpg|png)$/, '-waveform-temp.png');
+    
+    // Generate waveform 
+    const waveformCmd = `ffmpeg -y -i "${tempAudio}" -filter_complex "compand=gain=3,showwavespic=s=${targetWidth}x${targetHeight}:colors=white" -frames:v 1 "${tempWaveform}"`;
+    await execAsync(waveformCmd);
+    
+    // Step 3: Composite waveform over cover image without rescaling
+    const compositeCmd = `ffmpeg -y -i "${coverImage}" -i "${tempWaveform}" -filter_complex "[1:v]colorchannelmixer=aa=0.5[wave];[0:v][wave]overlay=0:0" -q:v 2 "${outputImagePath}"`;
+    await execAsync(compositeCmd);
+    
+    // Clean up temp files
+    await fs.unlink(tempWaveform);
+    await fs.unlink(tempAudio);
+    
+    console.log(`✓ Generated waveform image: ${outputImagePath} (${targetWidth}x${targetHeight})`);
+    
+    return outputImagePath;
+  } catch (error) {
+    console.error(`Failed to generate waveform image for ${audioPath}:`, error.message);
+    return false;
+  }
+}
+
 async function generateVideoFromAudio(audioPath, outputVideoPath, coverImage) {
   try {
     // Check if ffmpeg is available
@@ -45,15 +90,6 @@ async function generateVideoFromAudio(audioPath, outputVideoPath, coverImage) {
     await fs.mkdir(path.dirname(outputVideoPath), { recursive: true });
     
     // Generate video with static image and audio
-    // -loop 1: loop the image
-    // -i coverImage: input image
-    // -i audioPath: input audio
-    // -c:v libx264: use H.264 codec for video
-    // -tune stillimage: optimize for static image
-    // -c:a aac: use AAC codec for audio
-    // -b:a 192k: audio bitrate
-    // -pix_fmt yuv420p: pixel format for compatibility
-    // -shortest: finish when shortest input ends (the audio)
     const ffmpegCmd = `ffmpeg -y -loop 1 -i "${coverImage}" -i "${audioPath}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -t 600 "${outputVideoPath}"`;
     
     await execAsync(ffmpegCmd);
@@ -98,19 +134,27 @@ async function generateSite() {
     })
   );
 
-  // Generate videos for music posts
+  // Generate waveform images, videos, and social images for music posts
   for (const entry of entries) {
     if (entry.musicSource && entry.tags.includes('music')) {
       const audioPath = path.join(OUTPUT_DIR, entry.musicSource);
       const videoPath = audioPath.replace(/\.(mp3|wav|ogg|m4a)$/i, '.mp4');
+      const waveformImagePath = audioPath.replace(/\.(mp3|wav|ogg|m4a)$/i, '-waveform.jpg');
+      
       const coverImage = entry.coverImage 
         ? path.join(OUTPUT_DIR, entry.coverImage)
         : AUDIO_COVER_IMAGE;
       
-      await generateVideoFromAudio(audioPath, videoPath, coverImage);
+      // Generate waveform image
+      const generatedImagePath = await generateWaveformImage(audioPath, waveformImagePath, coverImage);
       
-      // Store video path for later use
+      // Use waveform image for video if it was generated successfully
+      const videoSourceImage = generatedImagePath || coverImage;
+      await generateVideoFromAudio(audioPath, videoPath, videoSourceImage);
+      
+      // Store paths for later use
       entry.videoSource = entry.musicSource.replace(/\.(mp3|wav|ogg|m4a)$/i, '.mp4');
+      entry.waveformImage = generatedImagePath ? entry.musicSource.replace(/\.(mp3|wav|ogg|m4a)$/i, '-waveform.jpg') : null;
     }
   }
 
@@ -125,7 +169,8 @@ async function generateSite() {
     slug: entry.slug,
     description: entry.description || '',
     musicSource: entry.musicSource,
-    videoSource: entry.videoSource
+    videoSource: entry.videoSource,
+    waveformImage: entry.waveformImage
   }));
 
   await fs.writeFile(
@@ -143,7 +188,9 @@ async function generateSite() {
            ${entry.tags.map(tag => `<span class="tag" data-tag="${tag}">${tag}</span>`).join(' ')}
          </div>`
       : '';
-	const audioPlayer = generateAudioPlayer(entry);
+
+    const audioPlayer = generateAudioPlayer(entry);
+
 	writePost(entry, postTemplate, tagsHTML);
     
     return `
@@ -157,7 +204,7 @@ async function generateSite() {
           <header class="portfolio-title"><a href="/posts/${entry.slug}">${entry.title}</a></header>
           ${tagsHTML}
         </div>
-		${audioPlayer}
+        ${audioPlayer}
         <div class="portfolio-content">
           ${entry.content}
         </div>
@@ -197,17 +244,29 @@ function generateOpenGraphTags(entry) {
     <meta property="og:description" content="${description}" />
     <meta property="og:url" content="${postUrl}" />
     <meta property="og:site_name" content="${SITE_CONFIG.title}" />
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${entry.title}" />
     <meta name="twitter:description" content="${description}" />
   `;
 
-  if (isMusicPost && entry.videoSource) {
-    // Use og:video for Discord compatibility
-    const videoUrl = `${SITE_CONFIG.url}${entry.videoSource}`;
-    const audioUrl = `${SITE_CONFIG.url}${entry.musicSource}`;
+  if (isMusicPost) {
+    // Add waveform image for social sharing
+    if (entry.waveformImage) {
+      const imageUrl = `${SITE_CONFIG.url}${entry.waveformImage}`;
+      ogTags += `
+    <meta property="og:image" content="${imageUrl}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="1200" />
+    <meta name="twitter:image" content="${imageUrl}" />
+      `;
+    }
     
-    ogTags += `
+    if (entry.videoSource) {
+      // Use og:video for Discord compatibility
+      const videoUrl = `${SITE_CONFIG.url}${entry.videoSource}`;
+      const audioUrl = `${SITE_CONFIG.url}${entry.musicSource}`;
+      
+      ogTags += `
     <meta property="og:type" content="video.other" />
     <meta property="og:video" content="${videoUrl}" />
     <meta property="og:video:secure_url" content="${videoUrl}" />
@@ -215,13 +274,13 @@ function generateOpenGraphTags(entry) {
     <meta property="og:audio" content="${audioUrl}" />
     <meta property="og:audio:type" content="audio/mpeg" />
     <meta property="music:musician" content="${SITE_CONFIG.author}" />
-    `;
-    
-    // Add twitter player card for better support
-    ogTags += `
-    <meta name="twitter:card" content="player" />
+      `;
+      
+      // Add twitter player card for better support
+      ogTags += `
     <meta name="twitter:player" content="${videoUrl}" />
-    `;
+      `;
+    }
   } else {
     ogTags += `<meta property="og:type" content="article" />`;
   }
@@ -278,9 +337,15 @@ async function generateRSSFeed(entries) {
     const description = entry.description || entry.content.substring(0, 200).replace(/<[^>]*>/g, '') + '...';
     const postUrl = `${SITE_CONFIG.url}/posts/${entry.slug}`;
     
-    // Add enclosure for music posts
+    // Add enclosure for music posts (for podcast players)
     const enclosure = entry.musicSource 
-      ? `<enclosure url="${SITE_CONFIG.url}${entry.musicSource}" type="audio/mpeg" />`
+      ? `      <enclosure url="${SITE_CONFIG.url}${entry.musicSource}" type="audio/mpeg" />`
+      : '';
+    
+    // Add iTunes tags for better podcast player support
+    const itunesTags = entry.musicSource
+      ? `      <itunes:duration></itunes:duration>
+      <itunes:author>${SITE_CONFIG.author}</itunes:author>`
       : '';
     
     return `    <item>
@@ -290,12 +355,15 @@ async function generateRSSFeed(entries) {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
-      ${enclosure}
+${enclosure}
+${itunesTags}
     </item>`;
   }).join('\n');
 
   const rssXML = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" 
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
   <channel>
     <title>${SITE_CONFIG.title}</title>
     <description>${SITE_CONFIG.description}</description>
@@ -303,6 +371,8 @@ async function generateRSSFeed(entries) {
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <generator>Custom Static Site Generator</generator>
     <language>en-US</language>
+    <itunes:author>${SITE_CONFIG.author}</itunes:author>
+    <itunes:summary>${SITE_CONFIG.description}</itunes:summary>
 
 ${rssItems}
   </channel>
