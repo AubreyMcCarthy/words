@@ -6,12 +6,23 @@
     <title>Aubrey McCarthy - Words</title>
     <description>A collection of thoughts about making, game development, and life.</description>
     <link>https://words.aubrey.page</link>
-    <lastBuildDate>Thu, 13 Nov 2025 01:07:46 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 19 Dec 2025 01:02:46 GMT</lastBuildDate>
     <generator>Custom Static Site Generator</generator>
     <language>en-US</language>
     <itunes:author>Aubrey McCarthy</itunes:author>
     <itunes:summary>A collection of thoughts about making, game development, and life.</itunes:summary>
 
+    <item>
+      <title><![CDATA[Street]]></title>
+      <description><![CDATA[...]]></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+      <link>https://words.aubrey.page/posts/street</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/street</guid>
+      <pubDate>Wed, 19 Nov 2025 00:00:00 GMT</pubDate>
+      <enclosure url="https://words.aubrey.page/audio/street.mp3" type="audio/mpeg" />
+      <itunes:duration></itunes:duration>
+      <itunes:author>Aubrey McCarthy</itunes:author>
+    </item>
     <item>
       <title><![CDATA[SENCE]]></title>
       <description><![CDATA[Autumn downtempo vibes]]></description>
