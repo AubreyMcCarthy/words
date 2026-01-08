@@ -6,12 +6,23 @@
     <title>Aubrey McCarthy - Words</title>
     <description>A collection of thoughts about making, game development, and life.</description>
     <link>https://words.aubrey.page</link>
-    <lastBuildDate>Fri, 19 Dec 2025 01:02:46 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 08 Jan 2026 18:57:57 GMT</lastBuildDate>
     <generator>Custom Static Site Generator</generator>
     <language>en-US</language>
     <itunes:author>Aubrey McCarthy</itunes:author>
     <itunes:summary>A collection of thoughts about making, game development, and life.</itunes:summary>
 
+    <item>
+      <title><![CDATA[cake_demo.mp3]]></title>
+      <description><![CDATA[...]]></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+      <link>https://words.aubrey.page/posts/cake_demo</link>
+      <guid isPermaLink="true">https://words.aubrey.page/posts/cake_demo</guid>
+      <pubDate>Thu, 08 Jan 2026 00:00:00 GMT</pubDate>
+      <enclosure url="https://words.aubrey.page/audio/cake_demo.mp3" type="audio/mpeg" />
+      <itunes:duration></itunes:duration>
+      <itunes:author>Aubrey McCarthy</itunes:author>
+    </item>
     <item>
       <title><![CDATA[Street]]></title>
       <description><![CDATA[...]]></description>
