@@ -35,6 +35,11 @@ body {
 
 a {
 	text-decoration: none;
+	color: var(--link-color);
+}
+
+a {
+	color: var(--link-color-hover);
 }
 
 .portfolio-item {
@@ -87,13 +92,11 @@ a {
 }
 
 .portfolio-section a {
-	color: var(--link-color);
 	text-decoration: none;
 	transition: color var(--transition-speed);
 }
 
 .portfolio-section a:hover {
-	color: var(--link-color-hover);
 }
 
 
@@ -143,5 +146,7 @@ a {
 }
 
 audio {
-	width: 100%;
+	width: calc(100% - 40px);
+	display: block;
+	margin: auto;
 }
